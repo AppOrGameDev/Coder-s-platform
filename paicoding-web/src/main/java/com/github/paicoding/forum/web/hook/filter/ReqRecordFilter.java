@@ -2,7 +2,6 @@ package com.github.paicoding.forum.web.hook.filter;
 
 import cn.hutool.core.date.StopWatch;
 import com.github.paicoding.forum.api.model.context.ReqInfoContext;
-import com.github.paicoding.forum.core.async.AsyncUtil;
 import com.github.paicoding.forum.core.mdc.MdcUtil;
 import com.github.paicoding.forum.core.util.CrossUtil;
 import com.github.paicoding.forum.core.util.EnvUtil;
@@ -185,10 +184,10 @@ public class ReqRecordFilter implements Filter {
         REQ_LOG.info("{}", msg);
 
         // 保存请求计数
-        AsyncUtil.concurrentExecutor("保存请求计数信息")
-                        .async(() -> statisticsSettingService.saveRequestCount(req.getClientIp()), "saveRequestCount")
-                        .allExecuted();
-//        statisticsSettingService.saveRequestCount(req.getClientIp());
+//        AsyncUtil.concurrentExecutor("保存请求计数信息")
+//                        .async(() -> statisticsSettingService.saveRequestCount(req.getClientIp()), "saveRequestCount")
+//                        .allExecuted();
+        statisticsSettingService.saveRequestCount(req.getClientIp());
     }
 
 

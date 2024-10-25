@@ -1,4 +1,4 @@
-package com.github.paicoding.forum.service.statistics.service.statistic;
+package com.github.paicoding.forum.core.config;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

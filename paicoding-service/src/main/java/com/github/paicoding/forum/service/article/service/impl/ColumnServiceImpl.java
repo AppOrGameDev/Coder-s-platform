@@ -10,6 +10,7 @@ import com.github.paicoding.forum.api.model.vo.article.dto.SimpleArticleDTO;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import com.github.paicoding.forum.api.model.vo.user.dto.ColumnFootCountDTO;
+import com.github.paicoding.forum.service.article.cache.ArticleCacheManager;
 import com.github.paicoding.forum.service.article.conveter.ColumnConvert;
 import com.github.paicoding.forum.service.article.repository.dao.ArticleDao;
 import com.github.paicoding.forum.service.article.repository.dao.ColumnArticleDao;
@@ -41,8 +42,15 @@ public class ColumnServiceImpl implements ColumnService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ArticleCacheManager articleCacheManager;
+
     @Override
     public ColumnArticleDO getColumnArticleRelation(Long articleId) {
+//        ColumnArticleDO columnArticle = articleCacheManager.getColumnArticle(articleId);
+//        if(columnArticle != null){
+//            return columnArticle;
+//        }
         return columnArticleDao.selectColumnArticleByArticleId(articleId);
     }
 

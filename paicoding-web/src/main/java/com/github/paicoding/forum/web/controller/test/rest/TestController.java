@@ -4,9 +4,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.paicoding.forum.api.model.context.ReqInfoContext;
 import com.github.paicoding.forum.api.model.enums.ai.AISourceEnum;
 import com.github.paicoding.forum.api.model.exception.ForumAdviceException;
+import com.github.paicoding.forum.api.model.vo.PageParam;
 import com.github.paicoding.forum.api.model.vo.ResVo;
 import com.github.paicoding.forum.api.model.vo.Status;
+import com.github.paicoding.forum.api.model.vo.article.dto.ArticleDTO;
+import com.github.paicoding.forum.api.model.vo.article.dto.ArticleOtherDTO;
+import com.github.paicoding.forum.api.model.vo.comment.dto.TopCommentDTO;
 import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
+import com.github.paicoding.forum.api.model.vo.recommend.SideBarDTO;
+import com.github.paicoding.forum.api.model.vo.user.dto.UserStatisticInfoDTO;
 import com.github.paicoding.forum.core.autoconf.DynamicConfigContainer;
 import com.github.paicoding.forum.core.dal.DsAno;
 import com.github.paicoding.forum.core.dal.DsSelectExecutor;
@@ -17,10 +23,17 @@ import com.github.paicoding.forum.core.senstive.SensitiveService;
 import com.github.paicoding.forum.core.util.EmailUtil;
 import com.github.paicoding.forum.core.util.JsonUtil;
 import com.github.paicoding.forum.core.util.SpringUtil;
+import com.github.paicoding.forum.service.article.repository.entity.ColumnArticleDO;
+import com.github.paicoding.forum.service.article.service.ArticleReadService;
+import com.github.paicoding.forum.service.article.service.ColumnService;
 import com.github.paicoding.forum.service.chatai.ChatFacade;
+import com.github.paicoding.forum.service.comment.service.CommentReadService;
 import com.github.paicoding.forum.service.config.service.GlobalConfigService;
+import com.github.paicoding.forum.service.sidebar.service.SidebarService;
 import com.github.paicoding.forum.service.statistics.service.StatisticsSettingService;
 import com.github.paicoding.forum.service.statistics.service.impl.CountServiceImpl;
+import com.github.paicoding.forum.service.user.service.UserService;
+import com.github.paicoding.forum.web.controller.article.vo.ArticleDetailVo;
 import com.github.paicoding.forum.web.controller.test.vo.EmailReqVo;
 import com.github.paicoding.forum.web.global.vo.ResultVo;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +47,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +64,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RestController
 @RequestMapping(path = "test")
 public class TestController {
+    @Autowired
+    private ArticleReadService articleService;
+
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private CommentReadService commentService;
+
+    @Autowired
+    private SidebarService sidebarService;
+
+    @Autowired
+    private ColumnService columnService;
+
     private AtomicInteger cnt = new AtomicInteger(1);
 
     /**
@@ -333,6 +362,48 @@ public class TestController {
     @GetMapping("info")
     public ResultVo<String> getGlobalInfo() {
         return ResultVo.ok("ok");
+    }
+
+    @GetMapping("/data/detail/{articleId}")
+    public ResultVo<ArticleDetailVo> detailOriginalMarkdown(@PathVariable(name = "articleId") Long articleId) throws IOException {
+        // 针对专栏文章，做一个重定向
+        ColumnArticleDO columnArticle = columnService.getColumnArticleRelation(articleId);
+        ArticleDetailVo vo = new ArticleDetailVo();
+
+        if (columnArticle != null) {
+            vo.setColumnId(columnArticle.getColumnId());
+            vo.setSectionId(columnArticle.getSection());
+            return ResultVo.ok(vo, true);
+        }
+
+        // 文章相关信息
+        ArticleDTO articleDTO = articleService.queryFullArticleInfo(articleId, ReqInfoContext.getReqInfo().getUserId());
+        // 返回给前端页面时，转换为html格式
+        articleDTO.setContent(articleDTO.getContent());
+        vo.setArticle(articleDTO);
+
+        // 评论信息
+        List<TopCommentDTO> comments = commentService.getArticleComments(articleId, PageParam.newPageInstance(1L, 10L));
+        vo.setComments(comments);
+
+        // 热门评论
+        TopCommentDTO hotComment = commentService.queryHotComment(articleId);
+        vo.setHotComment(hotComment);
+
+        // 其他信息封装
+        ArticleOtherDTO other = new ArticleOtherDTO();
+        // 作者信息
+        UserStatisticInfoDTO user = userService.queryUserInfoWithStatistic(articleDTO.getAuthor());
+        articleDTO.setAuthorName(user.getUserName());
+        articleDTO.setAuthorAvatar(user.getPhoto());
+        vo.setAuthor(user);
+
+        vo.setOther(other);
+
+        // 详情页的侧边推荐信息
+        List<SideBarDTO> sideBars = sidebarService.queryArticleDetailSidebarList(articleDTO.getAuthor(), articleDTO.getArticleId());
+        vo.setSideBarItems(sideBars);
+        return ResultVo.ok(vo);
     }
 
 }

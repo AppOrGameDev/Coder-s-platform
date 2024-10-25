@@ -93,7 +93,7 @@ public class RedisClient {
      */
     public static String getStr(String key) {
         return template.execute((RedisCallback<String>) con -> {
-            byte[] val = con.get(keyBytes(key));
+            byte[] val = con.commands().get(keyBytes(key));
             return val == null ? null : new String(val);
         });
     }
@@ -117,7 +117,7 @@ public class RedisClient {
      * @param key
      */
     public static void del(String key) {
-        template.execute((RedisCallback<Long>) con -> con.del(keyBytes(key)));
+        template.execute((RedisCallback<Long>) con -> con.commands().del(keyBytes(key)));
     }
 
     /**
@@ -128,7 +128,7 @@ public class RedisClient {
      */
     public static void expire(String key, Long expire) {
         template.execute((RedisCallback<Void>) connection -> {
-            connection.expire(keyBytes(key), expire);
+            connection.commands().expire(keyBytes(key), expire);
             return null;
         });
     }
@@ -145,7 +145,7 @@ public class RedisClient {
         return template.execute(new RedisCallback<Boolean>() {
             @Override
             public Boolean doInRedis(RedisConnection redisConnection) throws DataAccessException {
-                return redisConnection.setEx(keyBytes(key), expire, valBytes(value));
+                return redisConnection.commands().setEx(keyBytes(key), expire, valBytes(value));
             }
         });
     }
@@ -319,7 +319,7 @@ public class RedisClient {
         return template.execute(new RedisCallback<Double>() {
             @Override
             public Double doInRedis(RedisConnection connection) throws DataAccessException {
-                return connection.zIncrBy(keyBytes(key), score, valBytes(value));
+                return connection.zSetCommands().zIncrBy(keyBytes(key), score, valBytes(value));
             }
         });
     }
@@ -341,7 +341,7 @@ public class RedisClient {
         return template.execute(new RedisCallback<Double>() {
             @Override
             public Double doInRedis(RedisConnection connection) throws DataAccessException {
-                return connection.zScore(keyBytes(key), valBytes(value));
+                return connection.zSetCommands().zScore(keyBytes(key), valBytes(value));
             }
         });
     }
@@ -380,7 +380,7 @@ public class RedisClient {
         return template.execute(new RedisCallback<List<ImmutablePair<String, Double>>>() {
             @Override
             public List<ImmutablePair<String, Double>> doInRedis(RedisConnection connection) throws DataAccessException {
-                Set<Tuple> set = connection.zRangeWithScores(key.getBytes(), -n, -1);
+                Set<Tuple> set = connection.zRangeByScoreWithScores(key.getBytes(), -n, -1);
                 if (set == null) {
                     return Collections.emptyList();
                 }

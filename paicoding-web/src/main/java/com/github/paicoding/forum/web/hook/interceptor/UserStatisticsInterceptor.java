@@ -5,7 +5,7 @@ import com.github.paicoding.forum.core.async.AsyncUtil;
 import com.github.paicoding.forum.core.util.SpringUtil;
 import com.github.paicoding.forum.service.sitemap.service.impl.SitemapServiceImpl;
 import com.github.paicoding.forum.service.statistics.service.statistic.UserStatisticService;
-import com.github.paicoding.forum.service.statistics.service.statistic.UserStatisticServiceProperties;
+import com.github.paicoding.forum.core.config.UserStatisticServiceProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -123,22 +123,22 @@ public class UserStatisticsInterceptor {
             // 检查请求中是否包含 SESSION_ID Cookie
 //        String sessionId = getSessionIdFromCookies(request);
 
-            if (session.isNew()) {
+//            if (session.isNew()) {
                 // 如果没有 sessionId，则生成新的 sessionId
-                String sessionId = session.getId();
+//                String sessionId = session.getId();
 
                 // 将 sessionId 存入缓存，标记用户为在线
 //            userStatisticService.incrOnlineUserCnt(1);
 
                 // 将 sessionId 添加到 Cookie 返回给浏览器
-                Cookie sessionCookie = new Cookie(SESSION_COOKIE_NAME, sessionId);
+//                Cookie sessionCookie = new Cookie(SESSION_COOKIE_NAME, sessionId);
                 // 防止脚本访问
-                sessionCookie.setHttpOnly(true);
-                sessionCookie.setPath("/");
+//                sessionCookie.setHttpOnly(true);
+//                sessionCookie.setPath("/");
                 // 30分钟有效期
-                sessionCookie.setMaxAge(30);
-                response.addCookie(sessionCookie);
-            }
+//                sessionCookie.setMaxAge(30);
+//                response.addCookie(sessionCookie);
+//            }
             // 继续处理请求
             return true;
 

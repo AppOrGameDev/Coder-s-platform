@@ -15,6 +15,7 @@ import com.github.paicoding.forum.api.model.vo.constants.StatusEnum;
 import com.github.paicoding.forum.api.model.vo.user.dto.BaseUserInfoDTO;
 import com.github.paicoding.forum.core.util.ArticleUtil;
 import com.github.paicoding.forum.core.util.SpringUtil;
+import com.github.paicoding.forum.service.article.cache.ArticleCacheManager;
 import com.github.paicoding.forum.service.article.conveter.ArticleConverter;
 import com.github.paicoding.forum.service.article.repository.dao.ArticleDao;
 import com.github.paicoding.forum.service.article.repository.dao.ArticleTagDao;
@@ -84,6 +85,9 @@ public class ArticleReadServiceImpl implements ArticleReadService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private ArticleCacheManager articleCacheManager;
+
     // 是否开启ES
     @Value("${elasticsearch.open:false}")
     private Boolean openES;
@@ -128,8 +132,14 @@ public class ArticleReadServiceImpl implements ArticleReadService {
      */
     @Override
     public ArticleDTO queryFullArticleInfo(Long articleId, Long readUser) {
-        ArticleDTO article = queryDetailArticleInfo(articleId);
 
+        ArticleDTO article;
+
+//        article = articleCacheManager.getArticleInfo(articleId);
+//        if(article == null){
+//
+//        }
+        article = queryDetailArticleInfo(articleId);
         // 文章阅读计数+1
         countService.incrArticleReadCount(article.getAuthor(), articleId);
 

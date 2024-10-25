@@ -7,9 +7,11 @@ import com.github.paicoding.forum.api.model.enums.column.ColumnTypeEnum;
 import com.github.paicoding.forum.api.model.enums.user.UserAIStatEnum;
 import com.github.paicoding.forum.api.model.vo.PageParam;
 import com.github.paicoding.forum.api.model.vo.article.dto.*;
+import com.github.paicoding.forum.api.model.vo.article.response.ArticleColumnRelationResponseDTO;
 import com.github.paicoding.forum.api.model.vo.comment.dto.TopCommentDTO;
 import com.github.paicoding.forum.api.model.vo.recommend.SideBarDTO;
 import com.github.paicoding.forum.core.util.SpringUtil;
+import com.github.paicoding.forum.service.article.conveter.ArticleColumnRelationConverter;
 import com.github.paicoding.forum.service.article.repository.entity.ColumnArticleDO;
 import com.github.paicoding.forum.service.article.service.ArticleReadService;
 import com.github.paicoding.forum.service.article.service.ColumnService;
@@ -112,13 +114,13 @@ public class ColumnRestController {
 
         // 把是文章翻页的参数封装到这里
         // prev 的 href 和 是否显示的 flag
-        ColumnArticleFlipDTO flip = new ColumnArticleFlipDTO();
-        flip.setPrevHref("/column/" + columnId + "/" + (section - 1));
-        flip.setPrevShow(section > 1);
-        // next 的 href 和 是否显示的 flag
-        flip.setNextHref("/column/" + columnId + "/" + (section + 1));
-        flip.setNextShow(section < articles.size());
-        other.setFlip(flip);
+//        ColumnArticleFlipDTO flip = new ColumnArticleFlipDTO();
+//        flip.setPrevHref("/column/" + columnId + "/" + (section - 1));
+//        flip.setPrevShow(section > 1);
+//        // next 的 href 和 是否显示的 flag
+//        flip.setNextHref("/column/" + columnId + "/" + (section + 1));
+//        flip.setNextShow(section < articles.size());
+//        other.setFlip(flip);
 
         // 放入 model 中
         vo.setOther(other);
@@ -128,6 +130,13 @@ public class ColumnRestController {
         SpringUtil.getBean(SeoInjectService.class).initColumnSeo(vo, column);
         return ResultVo.ok(vo);
     }
+
+    @GetMapping("article/{articleId}")
+    public ResultVo<ArticleColumnRelationResponseDTO> queryColumnArticleRelation(@PathVariable("articleId") Long articleId) {
+        ColumnArticleDO columnArticle = columnService.getColumnArticleRelation(articleId);
+        return ResultVo.ok(ArticleColumnRelationConverter.INSTANCE.toResponseDto(columnArticle));
+    }
+
 
     /**
      * 对于要求登录阅读的文章进行进行处理

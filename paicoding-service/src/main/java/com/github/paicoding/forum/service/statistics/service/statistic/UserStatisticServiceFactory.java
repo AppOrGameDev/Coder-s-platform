@@ -1,5 +1,6 @@
 package com.github.paicoding.forum.service.statistics.service.statistic;
 
+import com.github.paicoding.forum.core.config.UserStatisticServiceProperties;
 import com.github.paicoding.forum.service.statistics.service.statistic.impl.UserStatisticServiceAtomicIntegerImpl;
 import com.github.paicoding.forum.service.statistics.service.statistic.impl.UserStatisticServiceCaffeineImpl;
 import com.github.paicoding.forum.service.statistics.service.statistic.impl.UserStatisticServiceRedisImpl;
